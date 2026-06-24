@@ -47,3 +47,22 @@ def test_scan_not_a_directory(tmp_path):
     f.write_text("")
     rc = main(["scan", str(f)])
     assert rc == 2
+
+
+def test_scan_finds_planted_secret_and_exits_1(tmp_path, capsys):
+    (tmp_path / "leak.py").write_text("token = ghp_" + "a" * 36 + "\n")
+    rc = main(["scan", str(tmp_path), "--output", "json"])
+    assert rc == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["findings"]
+    assert payload["findings"][0]["rule"] == "github-pat"
+    assert payload["findings"][0]["path"] == "leak.py"
+
+
+def test_scan_detectors_filter(tmp_path, capsys):
+    (tmp_path / "leak.py").write_text("token = ghp_" + "a" * 36 + "\n")
+    rc = main(["scan", str(tmp_path), "--detectors", "entropy", "--output", "json"])
+    assert rc in (0, 1)
+    payload = json.loads(capsys.readouterr().out)
+    # Regex rule should NOT appear when detectors are limited to entropy.
+    assert all(f["rule"] != "github-pat" for f in payload["findings"])
