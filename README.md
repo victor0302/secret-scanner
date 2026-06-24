@@ -1,5 +1,7 @@
 # secret-scanner
 
+[![CI](https://github.com/victor0302/secret-scanner/actions/workflows/ci.yml/badge.svg)](https://github.com/victor0302/secret-scanner/actions/workflows/ci.yml)
+
 Scan a filesystem path for leaked secrets.
 
 ## Install
